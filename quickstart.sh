@@ -58,19 +58,17 @@ show_menu() {
     echo "What would you like to do?"
     echo ""
     echo "1) Run test with existing storage accounts"
-    echo "2) Deploy new infrastructure (storage accounts + VM)"
-    echo "3) Check prerequisites"
-    echo "4) View examples"
-    echo "5) Exit"
+    echo "2) Check prerequisites"
+    echo "3) View examples"
+    echo "4) Exit"
     echo ""
     read -p "Enter your choice [1-5]: " choice
     
     case $choice in
         1) run_test ;;
-        2) deploy_infrastructure ;;
-        3) check_prerequisites ;;
-        4) view_examples ;;
-        5) exit 0 ;;
+        2) check_prerequisites ;;
+        3) view_examples ;;
+        4) exit 0 ;;
         *) 
             print_error "Invalid choice"
             show_menu
@@ -104,95 +102,6 @@ run_test() {
     read -p "Press Enter to continue or Ctrl+C to cancel..."
     
     ./scripts/blob-upload-test.sh -a "$storage1" -r "$region1" -b "$storage2" -s "$region2" -f "$filesize"
-    
-    echo ""
-    read -p "Press Enter to return to menu..."
-    show_menu
-}
-
-# Deploy infrastructure
-deploy_infrastructure() {
-    print_header "Deploy Infrastructure"
-    
-    print_info "This will deploy:"
-    echo "  - Two storage accounts in different regions"
-    echo "  - One VM for running tests"
-    echo ""
-    
-    read -p "Resource Group Name: " rg_name
-    read -p "Resource Group Location (e.g., centralus): " rg_location
-    
-    echo ""
-    print_info "Checking for SSH key..."
-    
-    if [ ! -f ~/.ssh/id_rsa.pub ]; then
-        print_error "No SSH key found at ~/.ssh/id_rsa.pub"
-        read -p "Would you like to generate one now? [y/N]: " generate_key
-        if [[ $generate_key =~ ^[Yy]$ ]]; then
-            ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
-            print_success "SSH key generated"
-        else
-            print_error "Cannot proceed without SSH key"
-            read -p "Press Enter to return to menu..."
-            show_menu
-            return
-        fi
-    fi
-    
-    # Create parameters file
-    local ssh_key=$(cat ~/.ssh/id_rsa.pub)
-    local params_file="infra/main.parameters.local.json"
-    
-    print_info "Creating parameters file..."
-    cat > "$params_file" << EOF
-{
-  "\$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "baseName": {
-      "value": "bloblatencytest"
-    },
-    "primaryRegion": {
-      "value": "eastus"
-    },
-    "secondaryRegion": {
-      "value": "westus2"
-    },
-    "vmRegion": {
-      "value": "centralus"
-    },
-    "adminUsername": {
-      "value": "azureuser"
-    },
-    "sshPublicKey": {
-      "value": "$ssh_key"
-    },
-    "vmSize": {
-      "value": "Standard_B2s"
-    },
-    "tags": {
-      "value": {
-        "environment": "test",
-        "purpose": "blob-latency-testing"
-      }
-    }
-  }
-}
-EOF
-    
-    print_success "Parameters file created: $params_file"
-    
-    echo ""
-    print_info "Starting deployment..."
-    read -p "Press Enter to continue or Ctrl+C to cancel..."
-    
-    cd infra
-    ./deploy.sh -g "$rg_name" -l "$rg_location" -p "$(basename $params_file)"
-    cd ..
-    
-    echo ""
-    print_success "Deployment complete!"
-    print_info "Note the output values above for running tests"
     
     echo ""
     read -p "Press Enter to return to menu..."
