@@ -1,0 +1,24 @@
+# Test files
+test-file-*.bin
+*.bin
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Local parameters
+infra/*.local.json
+
+# Logs
+*.log
+
+# Azure
+.azure/
