@@ -25,7 +25,23 @@ A repository with scripts to test blob upload latency and speed between two Azur
 
 ## Quick Start
 
-### 1. Local Testing
+### Option A: Interactive Quick Start (Recommended for Beginners)
+
+Use the interactive quickstart script that guides you through the process:
+
+```bash
+./quickstart.sh
+```
+
+This interactive script will help you:
+- Check prerequisites
+- Run tests with existing storage accounts
+- Deploy new infrastructure
+- View examples
+
+### Option B: Manual Command Line
+
+#### 1. Local Testing
 
 Run the blob upload test locally against two existing storage accounts:
 
@@ -59,7 +75,7 @@ az login
   -f 50
 ```
 
-### 2. Deploy Infrastructure
+#### 2. Deploy Infrastructure
 
 Deploy the complete infrastructure (storage accounts + VM) using Bicep:
 
@@ -83,7 +99,7 @@ The deployment script will:
 3. Deploy a test VM with Azure CLI pre-installed
 4. Output the storage account names and VM IP address
 
-### 3. Run Tests on the VM
+#### 3. Run Tests on the VM
 
 After deployment, SSH to the VM and run tests:
 
@@ -115,6 +131,8 @@ ssh azureuser@<vm-public-ip>
 │   └── modules/
 │       ├── storage-account.bicep   # Storage account module
 │       └── virtual-machine.bicep   # VM module
+├── quickstart.sh               # Interactive quick start script
+├── EXAMPLES.md                 # Detailed usage examples
 └── README.md
 ```
 
