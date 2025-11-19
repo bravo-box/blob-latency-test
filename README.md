@@ -18,27 +18,17 @@ A repository with scripts to test blob upload latency and speed between two Azur
 - Bash shell (Linux, macOS, or WSL on Windows)
 - `bc` command-line calculator (usually pre-installed)
 
-### For Infrastructure Deployment
-- All local testing prerequisites
-- `jq` for JSON parsing (used in deployment script)
-- SSH key pair for VM access
+### Capture Network Hops
 
-## Quick Start
-
-### Option A: Interactive Quick Start (Recommended for Beginners)
-
-Use the interactive quickstart script that guides you through the process:
+Run traceroutes against your storage accounts and optional hostnames while saving a log:
 
 ```bash
-./quickstart.sh
+./scripts/blob-network-hops.sh \
+  -s mystorageeastus \
+  -s mystoragewestus \
+  -c 10 \
+  -o logs/eastus-westus-hops.log
 ```
-
-This interactive script will help you:
-- Check prerequisites
-- Run tests with existing storage accounts
-- Deploy new infrastructure
-- View examples
-
 ### Option B: Manual Command Line
 
 #### 1. Local Testing

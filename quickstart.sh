@@ -59,16 +59,18 @@ show_menu() {
     echo ""
     echo "1) Run test with existing storage accounts"
     echo "2) Check prerequisites"
-    echo "3) View examples"
-    echo "4) Exit"
+    echo "3) Capture network hops"
+    echo "4) View examples"
+    echo "5) Exit"
     echo ""
     read -p "Enter your choice [1-5]: " choice
     
     case $choice in
         1) run_test ;;
         2) check_prerequisites ;;
-        3) view_examples ;;
-        4) exit 0 ;;
+        3) capture_network_hops ;;
+        4) view_examples ;;
+        5) exit 0 ;;
         *) 
             print_error "Invalid choice"
             show_menu
@@ -108,6 +110,59 @@ run_test() {
     show_menu
 }
 
+# Capture network hops
+capture_network_hops() {
+    print_header "Capture Network Hops"
+    
+    echo "Enter storage account(s) to trace (one per line, empty line to finish):"
+    storage_accounts=()
+    while true; do
+        read -p "Storage Account Name (or press Enter to finish): " storage_account
+        if [ -z "$storage_account" ]; then
+            break
+        fi
+        storage_accounts+=("$storage_account")
+    done
+    
+    if [ ${#storage_accounts[@]} -eq 0 ]; then
+        print_error "At least one storage account is required"
+        echo ""
+        read -p "Press Enter to return to menu..."
+        show_menu
+        return
+    fi
+    
+    echo ""
+    read -p "DNS suffix [default: blob.core.usgovcloudapi.net]: " dns_suffix
+    dns_suffix=${dns_suffix:-blob.core.usgovcloudapi.net}
+    
+    echo ""
+    read -p "MTR cycles [default: 5]: " mtr_cycles
+    mtr_cycles=${mtr_cycles:-5}
+    
+    echo ""
+    print_info "Running network hop capture with:"
+    for sa in "${storage_accounts[@]}"; do
+        echo "  Storage Account: $sa"
+    done
+    echo "  DNS Suffix: $dns_suffix"
+    echo "  MTR Cycles: $mtr_cycles"
+    echo ""
+    read -p "Press Enter to continue or Ctrl+C to cancel..."
+    
+    # Build command with all storage accounts
+    cmd="./scripts/blob-network-hops.sh -d \"$dns_suffix\" -c \"$mtr_cycles\""
+    for sa in "${storage_accounts[@]}"; do
+        cmd="$cmd -s \"$sa\""
+    done
+    
+    eval $cmd
+    
+    echo ""
+    read -p "Press Enter to return to menu..."
+    show_menu
+}
+
 # Check prerequisites
 check_prerequisites() {
     print_header "Prerequisites Check"
@@ -129,6 +184,16 @@ check_prerequisites() {
     else
         print_error "jq is not installed (needed for deployment)"
         echo "Install it with: sudo apt-get install jq (Ubuntu/Debian) or brew install jq (macOS)"
+    fi
+
+    # Check for network hop tooling
+    if command -v mtr &> /dev/null; then
+        print_success "mtr is installed (preferred for hop capture)"
+    elif command -v traceroute &> /dev/null; then
+        print_success "traceroute is installed"
+    else
+        print_error "Neither mtr nor traceroute is installed (required for hop capture)"
+        echo "Install with: sudo apt-get install mtr-tiny (Ubuntu/Debian) or brew install mtr (macOS)"
     fi
     
     echo ""
